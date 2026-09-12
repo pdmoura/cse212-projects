@@ -11,7 +11,9 @@ public class TakingTurnsQueueTests
     // Scenario: Create a queue with the following people and turns: Bob (2), Tim (5), Sue (3) and
     // run until the queue is empty
     // Expected Result: Bob, Tim, Sue, Bob, Tim, Sue, Tim, Sue, Tim, Tim
-    // Defect(s) Found: 
+    // Defect(s) Found: PersonQueue is behaving like a stack (LIFO) instead of a queue (FIFO)
+    // like both Enqueue and Dequeue operate on index 0, so the last person added is returned first.
+    // I fixed it by changing the Enqueue to add to the back of the list.
     public void TestTakingTurnsQueue_FiniteRepetition()
     {
         var bob = new Person("Bob", 2);
@@ -43,7 +45,9 @@ public class TakingTurnsQueueTests
     // Scenario: Create a queue with the following people and turns: Bob (2), Tim (5), Sue (3)
     // After running 5 times, add George with 3 turns.  Run until the queue is empty.
     // Expected Result: Bob, Tim, Sue, Bob, Tim, Sue, Tim, George, Sue, Tim, George, Tim, George
-    // Defect(s) Found: 
+    // Defect(s) Found: Same cause as above, PersonQueue was LIFO instead of FIFO,
+    // so newly added/re-enqueued people came out in the wrong order. Fixed by the same
+    // PersonQueue.Enqueue change. 
     public void TestTakingTurnsQueue_AddPlayerMidway()
     {
         var bob = new Person("Bob", 2);
@@ -85,7 +89,10 @@ public class TakingTurnsQueueTests
     // Scenario: Create a queue with the following people and turns: Bob (2), Tim (Forever), Sue (3)
     // Run 10 times.
     // Expected Result: Bob, Tim, Sue, Bob, Tim, Sue, Tim, Sue, Tim, Tim
-    // Defect(s) Found: 
+    // Defect(s) Found: PersonQueue was LIFO instead of FIFO (same as above).
+    // GetNextPerson only re-enqueued a person when Turns > 1, so anyone with an
+    // infinite number of turns (Turns <= 0, like Tim here) was dequeued once and never
+    // re-added, disappearing from the queue instead of lasting forever.
     public void TestTakingTurnsQueue_ForeverZero()
     {
         var timTurns = 0;
@@ -116,7 +123,9 @@ public class TakingTurnsQueueTests
     // Scenario: Create a queue with the following people and turns: Tim (Forever), Sue (3)
     // Run 10 times.
     // Expected Result: Tim, Sue, Tim, Sue, Tim, Sue, Tim, Tim, Tim, Tim
-    // Defect(s) Found: 
+    // Defect(s) Found: Same two defects as TestTakingTurnsQueue_ForeverZero: PersonQueue
+    // was LIFO instead of FIFO, and people with infinite turns (Turns <= 0, including
+    // negative values like -3 here) were not re-enqueued after their first turn.
     public void TestTakingTurnsQueue_ForeverNegative()
     {
         var timTurns = -3;
