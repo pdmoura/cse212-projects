@@ -22,7 +22,31 @@ public static class SetsAndMaps
     public static string[] FindPairs(string[] words)
     {
         // TODO Problem 1 - ADD YOUR CODE HERE
-        return [];
+        // Plan: go through the words once and keep the ones I've seen in a set.
+        // For each word, flip it and check if the flipped version is already in the set.
+        // If it is, that's a pair. Contains on a set is O(1) so the whole thing is O(n).
+        // Words like "aa" flip to themselves, so those get skipped.
+        var seen = new HashSet<string>();
+        var pairs = new List<string>();
+
+        foreach (var word in words)
+        {
+            string flipped = $"{word[1]}{word[0]}";
+
+            if (flipped == word)
+            {
+                continue;
+            }
+
+            if (seen.Contains(flipped))
+            {
+                pairs.Add($"{word} & {flipped}");
+            }
+
+            seen.Add(word);
+        }
+
+        return pairs.ToArray();
     }
 
     /// <summary>
@@ -43,6 +67,17 @@ public static class SetsAndMaps
         {
             var fields = line.Split(",");
             // TODO Problem 2 - ADD YOUR CODE HERE
+            // column 4 = index 3
+            string degree = fields[3].Trim();
+
+            if (degrees.ContainsKey(degree))
+            {
+                degrees[degree]++;
+            }
+            else
+            {
+                degrees[degree] = 1;
+            }
         }
 
         return degrees;
@@ -67,7 +102,50 @@ public static class SetsAndMaps
     public static bool IsAnagram(string word1, string word2)
     {
         // TODO Problem 3 - ADD YOUR CODE HERE
-        return false;
+        // Plan: count the letters of word1 in a dictionary, then walk through word2
+        // subtracting. If something goes negative or is missing, not an anagram.
+        // At the end every count has to be back to zero.
+        // Spaces are skipped and letters are lowered as I go so I don't have to
+        // build new strings.
+        var letters = new Dictionary<char, int>();
+
+        foreach (char c in word1)
+        {
+            if (c == ' ')
+            {
+                continue;
+            }
+
+            char lower = char.ToLower(c);
+            letters.TryGetValue(lower, out int count);
+            letters[lower] = count + 1;
+        }
+
+        foreach (char c in word2)
+        {
+            if (c == ' ')
+            {
+                continue;
+            }
+
+            char lower = char.ToLower(c);
+            if (!letters.TryGetValue(lower, out int count) || count == 0)
+            {
+                return false;
+            }
+
+            letters[lower] = count - 1;
+        }
+
+        foreach (var count in letters.Values)
+        {
+            if (count != 0)
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /// <summary>
@@ -101,6 +179,14 @@ public static class SetsAndMaps
         // on those classes so that the call to Deserialize above works properly.
         // 2. Add code below to create a string out each place a earthquake has happened today and its magitude.
         // 3. Return an array of these string descriptions.
-        return [];
+        var summary = new List<string>();
+
+        foreach (var feature in featureCollection.Features)
+        {
+            var props = feature.Properties;
+            summary.Add($"{props.Place} - Mag {props.Mag}");
+        }
+
+        return summary.ToArray();
     }
 }
