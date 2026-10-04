@@ -15,7 +15,12 @@ public static class Recursion
     public static int SumSquaresRecursive(int n)
     {
         // TODO Start Problem 1
-        return 0;
+        // Base case: nothing left to add
+        if (n <= 0)
+            return 0;
+
+        // n^2 plus the sum of all the squares below it
+        return n * n + SumSquaresRecursive(n - 1);
     }
 
     /// <summary>
@@ -40,6 +45,19 @@ public static class Recursion
     public static void PermutationsChoose(List<string> results, string letters, int size, string word = "")
     {
         // TODO Start Problem 2
+        // Base case: the word is as long as we asked for, so it's done
+        if (word.Length == size)
+        {
+            results.Add(word);
+            return;
+        }
+
+        // Here we try every remaining letter in the next position, the letter we pick
+        // gets removed from the pool so it can't be used twice in the same word
+        for (int i = 0; i < letters.Length; i++)
+        {
+            PermutationsChoose(results, letters.Remove(i, 1), size, word + letters[i]);
+        }
     }
 
     /// <summary>
@@ -97,9 +115,19 @@ public static class Recursion
             return 4;
 
         // TODO Start Problem 3
+        // First call has no dictionary yet, so create one
+        remember ??= new Dictionary<int, decimal>();
+
+        // If this value of s was already figured out just hand it back
+        if (remember.ContainsKey(s))
+            return remember[s];
 
         // Solve using recursion
-        decimal ways = CountWaysToClimb(s - 1) + CountWaysToClimb(s - 2) + CountWaysToClimb(s - 3);
+        decimal ways = CountWaysToClimb(s - 1, remember) + CountWaysToClimb(s - 2, remember) +
+                       CountWaysToClimb(s - 3, remember);
+
+        // Save it so we never calculate this same s again.
+        remember[s] = ways;
         return ways;
     }
 
@@ -119,6 +147,20 @@ public static class Recursion
     public static void WildcardBinary(string pattern, List<string> results)
     {
         // TODO Start Problem 4
+        int wildcard = pattern.IndexOf('*');
+
+        // Base case: no more wildcards, so this is a finished binary string
+        if (wildcard == -1)
+        {
+            results.Add(pattern);
+            return;
+        }
+
+        // Replace the first wildcard with a 0 and then with a 1, and keep going
+        string before = pattern[..wildcard];
+        string after = pattern[(wildcard + 1)..];
+        WildcardBinary(before + "0" + after, results);
+        WildcardBinary(before + "1" + after, results);
     }
 
     /// <summary>
@@ -136,8 +178,29 @@ public static class Recursion
         // currPath.Add((1,2)); // Use this syntax to add to the current path
 
         // TODO Start Problem 5
-        // ADD CODE HERE
+        // Step onto this square.
+        currPath.Add((x, y));
 
-        // results.Add(currPath.AsString()); // Use this to add your path to the results array keeping track of complete maze solutions when you find the solution.
+        if (maze.IsEnd(x, y))
+        {
+            // results.Add(currPath.AsString()); // Use this to add your path to the results array keeping track of complete maze solutions when you find the solution.
+            results.Add(currPath.AsString());
+        }
+        else
+        {
+            // Try all four directions. IsValidMove keeps us inside the maze,
+            // out of walls, and off squares already in this path.
+            if (maze.IsValidMove(currPath, x + 1, y))
+                SolveMaze(results, maze, x + 1, y, currPath);
+            if (maze.IsValidMove(currPath, x - 1, y))
+                SolveMaze(results, maze, x - 1, y, currPath);
+            if (maze.IsValidMove(currPath, x, y + 1))
+                SolveMaze(results, maze, x, y + 1, currPath);
+            if (maze.IsValidMove(currPath, x, y - 1))
+                SolveMaze(results, maze, x, y - 1, currPath);
+        }
+
+        // Step back off this square so other paths can use it.
+        currPath.RemoveAt(currPath.Count - 1);
     }
 }
