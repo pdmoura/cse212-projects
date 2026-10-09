@@ -12,6 +12,9 @@ public class Node
     public void Insert(int value)
     {
         // TODO Start Problem 1
+        // no duplicates - if we already have it, just bail
+        if (value == Data)
+            return;
 
         if (value < Data)
         {
@@ -34,12 +37,26 @@ public class Node
     public bool Contains(int value)
     {
         // TODO Start Problem 2
-        return false;
+        // found it
+        if (value == Data)
+            return true;
+
+        // same compare as Insert - smaller can only be on the left, bigger only on the right
+        // so if that side is null the value just isn't in the tree
+        if (value < Data)
+            return Left is not null && Left.Contains(value);
+
+        return Right is not null && Right.Contains(value);
     }
 
     public int GetHeight()
     {
         // TODO Start Problem 4
-        return 0; // Replace this line with the correct return statement(s)
+        // no child = height 0
+        int leftHeight = Left is null ? 0 : Left.GetHeight();
+        int rightHeight = Right is null ? 0 : Right.GetHeight();
+
+        // this node adds 1 on top of whichever side is taller
+        return 1 + Math.Max(leftHeight, rightHeight);
     }
 }
